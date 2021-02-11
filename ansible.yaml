@@ -1,0 +1,88 @@
+---
+- hosts: server1
+  tasks:
+  - name: add users to the Server1
+    user: 
+	name: '{{ item.username }}'
+        state: present
+        uid: '{{ item.uid }}'
+    loop:
+    - username: alishan
+      uid: 200
+    - username: negar
+      uid: 201
+    - username: Tara
+      uid: 202
+
+- hosts: server2
+  tasks:
+  - name: add users to the Server2
+    user: 
+	name: '{{ item }}'
+        state: present
+    loop:
+    - alishan
+    - negar
+    - Tara
+
+- hosts: server3
+  tasks:
+  - name: add users to the Server3
+    user: 
+      name: '{{ item }}'
+      state: present
+    with_items:
+    - alishan
+    - negar
+    - Tara
+
+
+- hosts: server4
+  tasks:
+  - name: add user to server 4
+    ansible.builtin.user:
+      name: '{{ item.username }}'
+      group: '{{ item.groupname }}'
+      state: present
+    loop:
+    - username: alishan
+      groupname: admin
+
+- hosts: all
+  tasks:
+  - name: Install nging on Debian
+    apt: 
+      name: nginx
+      state: present
+      when: ansible_os_family == "Debian" and
+            ansible_distribution_version == "16.04"
+  - name: Install nging on CentOS
+    yum: 
+      name: nginx
+      state: present
+      when: ansible_os_family == "Redhat" or
+            ansible_os_family == "SUSE"
+
+- hosts: all
+  vars:
+    packages:
+      - name: nginx
+        os: "Redhat"
+      - name: wget
+        os: "Debian" and
+  tasks:
+    - name: install required packages on servers
+      yum:
+        name: '{{ item.name }}'
+        state: present
+        when: ansible_os_family == '{{ item.os }}'
+      loop: "{{ packages }}"
+    - name: install required packages on servers
+      apt:
+        name: '{{ item.name }}'
+        state: present
+        when: ansible_os_family == '{{ item.os }}'
+        loop: "{{ packages }}"
+    
+
+
